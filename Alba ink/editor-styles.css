@@ -1,0 +1,182 @@
+:root {
+    --bg: #000000;
+    --surface: #0a0a0a;
+    --card: #111111;
+    --text: #e0e0e0;
+    --dim: #888888;
+    --line: #222222;
+    --accent: #a78bfa;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.7;
+}
+
+/* ==================== NAVBAR ==================== */
+.navbar {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.logo {
+    font-size: 1.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    color: #ddd;
+}
+
+.brand-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #ccc;
+}
+
+/* ==================== CONTENEDOR PRINCIPAL ==================== */
+.editor-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* Tarjetas y paneles */
+.card, .editor-panel, .preview-panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+/* Inputs y Textarea */
+.input, .title-input, textarea {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: var(--text);
+    padding: 14px 16px;
+    border-radius: 8px;
+    width: 100%;
+    margin: 10px 0;
+    font-size: 1.05rem;
+}
+
+.title-input {
+    font-size: 1.55rem;
+    font-weight: 600;
+    padding: 16px;
+}
+
+textarea {
+    min-height: 420px;
+    resize: vertical;
+    font-family: 'Segoe UI', monospace;
+    line-height: 1.6;
+}
+
+/* Grid Editor + Preview */
+.editor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.preview-panel h3 {
+    margin-top: 0;
+    color: var(--accent);
+}
+
+/* Preview Markdown */
+.markdown-preview {
+    background: #0a0a0a;
+    padding: 25px;
+    border-radius: 8px;
+    min-height: 420px;
+    overflow-y: auto;
+    border: 1px solid #222;
+    line-height: 1.85;
+}
+
+/* Botones */
+.btn-primary {
+    background: #6b5cff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.btn-secondary {
+    background: #1f1f1f;
+    color: #ccc;
+    border: 1px solid #444;
+    padding: 12px 20px;
+    border-radius: 9999px;
+    cursor: pointer;
+}
+
+.btn-primary:hover, .btn-secondary:hover {
+    opacity: 0.9;
+}
+
+.actions {
+    margin: 25px 0;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* Lista de escritos */
+.record {
+    background: var(--card);
+    padding: 20px;
+    margin: 12px 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+}
+
+/* Logged message */
+.logged {
+    color: #4ade80;
+    margin: 15px 0;
+}
+
+/* ==================== RESPONSIVE (Móvil) ==================== */
+@media (max-width: 768px) {
+    .editor-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .title-input {
+        font-size: 1.4rem;
+    }
+
+    textarea {
+        min-height: 320px;
+    }
+
+    .markdown-preview {
+        min-height: 300px;
+    }
+
+    .card, .editor-panel, .preview-panel {
+        padding: 20px;
+    }
+}
