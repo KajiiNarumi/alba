@@ -3,226 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editor - Textos Largos AntuanSV</title>
+  <title>Alba Editor Ink</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
-    body { background:#0a0a0a; color:#e0e0e0; font-family:Arial, sans-serif; margin:20px; line-height:1.5; }
-    h1 { color:#c4b5fd; }
-    input, textarea { background:#1f1f1f; color:#e0e0e0; border:1px solid #444; padding:10px; width:100%; margin:8px 0; }
-    textarea { height:220px; }
-    button { padding:10px 16px; margin:5px 5px 5px 0; border:none; border-radius:4px; cursor:pointer; }
-    button:hover { opacity:0.9; }
-    .btn-primary { background:#8b5cf6; color:white; }
-    .btn-red { background:#8b0000; color:white; }
-    .logged { color:#4ade80; margin:10px 0; }
-    .record { background:#1a1a1a; padding:15px; margin:12px 0; border-left:4px solid #8b5cf6; }
-    .full-text { background:#111; padding:15px; white-space:pre-wrap; max-height:500px; overflow-y:auto; border:1px solid #333; }
+    :root {
+      --bg: #000000;
+      --surface: #0a0a0a;
+      --card: #111111;
+      --text: #e0e0e0;
+      --dim: #888888;
+      --line: #333333;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      line-height: 1.7;
+    }
+
+    /* ==================== NAVBAR ==================== */
+    .navbar {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+    }
+
+    /* ==================== CONTENEDORES ==================== */
+    .editor-container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .card, .editor-panel, .preview-panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    /* ==================== INPUTS ==================== */
+    .input, .title-input, textarea {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 14px 16px;
+      border-radius: 6px;
+      width: 100%;
+      margin: 10px 0;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .input:focus, textarea:focus {
+      outline: none;
+      border-color: #666;
+    }
+
+    .title-input {
+      font-size: 1.5rem;
+      font-weight: 600;
+      padding: 16px;
+    }
+
+    textarea#content {
+      min-height: 420px;
+      resize: vertical;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    textarea#synopsis {
+      min-height: 80px;
+      resize: none;
+    }
+
+    .char-counter {
+      text-align: right;
+      font-size: 0.85rem;
+      color: var(--dim);
+      margin-top: -5px;
+      margin-bottom: 15px;
+    }
+
+    /* ==================== GRID ==================== */
+    .editor-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .markdown-preview {
+      background: var(--surface);
+      padding: 25px;
+      border-radius: 6px;
+      min-height: 420px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+    }
+
+    /* ==================== IMÁGENES EN VISTA PREVIA ==================== */
+    .markdown-preview img {
+      display: block;
+      max-width: 80%;
+      height: auto;
+      margin: 24px auto;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+    }
+
+    /* ==================== BOTONES ==================== */
+    button {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--line);
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #1a1a1a;
+      border-color: #555;
+      color: #fff;
+    }
+
+    .btn-primary {
+      background: #e0e0e0;
+      color: #000;
+      border: none;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: #ffffff;
+    }
+
+    .actions {
+      margin: 20px 0;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* ==================== LISTA Y ESTADOS ==================== */
+    .record {
+      background: var(--surface);
+      padding: 20px;
+      margin: 15px 0;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .record-tags {
+      color: var(--dim);
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+
+    .logged {
+      color: #aaaaaa;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      .editor-grid { grid-template-columns: 1fr; }
+    }
+
+
   </style>
 </head>
 <body>
-  <h1>Editor de Textos Largos</h1>
 
-  <!-- Login -->
-  <div id="loginSection">
-    <p><strong>Handle / Email:</strong><br><input id="identifier" placeholder="iasuarezv.com"></p>
-    <p><strong>App Password:</strong><br><input id="password" type="password"></p>
-    <button class="btn-primary" onclick="login()">Iniciar Sesión</button>
+  <nav class="navbar">
+    <div class="logo">Alba Ink.</div>
+    <div id="userStatus" class="logged">No conectado</div>
+  </nav>
+
+  <div class="editor-container">
+
+    <!-- Login -->
+    <div id="loginSection" class="card">
+      <h2>Acceso PDS</h2>
+      <input class="input" id="identifier" placeholder="Handle (ej. iasuarezv.com)">
+      <input class="input" id="password" type="password" placeholder="App Password">
+      <button class="btn-primary" onclick="login()">Iniciar Sesión</button>
+    </div>
+
+    <!-- Panel Principal -->
+    <div id="mainSection" style="display:none;">
+      <div class="actions">
+        <button onclick="logout()">Cerrar Sesión</button>
+        <button onclick="clearForm()">Nuevo Escrito</button>
+        <button onclick="listTexts()">Refrescar Lista</button>
+      </div>
+
+      <div class="editor-grid">
+        <!-- Editor -->
+        <div class="editor-panel">
+          <!-- Límite de 60 caracteres añadido -->
+          <input class="title-input" id="title" placeholder="Título del escrito" maxlength="60">
+
+          <input class="input" id="category" placeholder="Categorías (ej. #tecnologia #filosofia)">
+
+          <!-- Límite de 120 caracteres ajustado -->
+          <textarea id="synopsis" class="input" placeholder="Sinopsis breve..." maxlength="120"></textarea>
+          <div id="synopsisCounter" class="char-counter">0 / 120</div>
+
+          <textarea id="content" placeholder="Escribe tu contenido en Markdown..."></textarea>
+
+          <div class="actions">
+            <button class="btn-primary" onclick="saveText()">Guardar Escrito</button>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="preview-panel">
+          <h3>Vista Previa</h3>
+          <div id="preview" class="markdown-preview"></div>
+        </div>
+      </div>
+
+      <!-- Lista -->
+      <div class="card">
+        <h3>Archivo</h3>
+        <div id="recordsList"></div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Panel Principal -->
-  <div id="mainSection" style="display:none;">
-    <p class="logged">✅ Conectado como <strong id="currentUser"></strong></p>
-    <button onclick="logout()">Cerrar Sesión</button>
-
-    <h3>Crear / Editar Texto</h3>
-    <input id="title" placeholder="Título del texto">
-    <textarea id="content" placeholder="Escribe aquí tu texto..."></textarea><br>
-    <button class="btn-primary" onclick="saveText()">💾 Guardar Texto</button>
-    <button onclick="clearForm()">Limpiar</button>
-
-    <h3>Mis Textos</h3>
-    <button onclick="listTexts()">🔄 Actualizar Lista</button>
-
-    <div id="recordsList"></div>
-  </div>
-
-  <script>
-    let session = null;
-    let currentRkey = null;
-
-    // Cargar sesión guardada
-    window.onload = () => {
-      const saved = localStorage.getItem('atprotoSession');
-      if (saved) {
-        session = JSON.parse(saved);
-        showMain();
-        listTexts();
-      }
-    };
-
-    async function login() {
-      const identifier = document.getElementById('identifier').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      if (!identifier || !password) return alert("Completa los datos");
-
-      try {
-        const resp = await fetch('https://bsky.social/xrpc/com.atproto.server.createSession', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ identifier, password })
-        });
-
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.message || "Datos incorrectos");
-
-        session = {
-          did: data.did,
-          jwt: data.accessJwt,
-          handle: data.handle
-        };
-
-        localStorage.setItem('atprotoSession', JSON.stringify(session));
-        showMain();
-        listTexts();
-
-      } catch (e) {
-        alert("Error: " + e.message);
-      }
-    }
-
-    function showMain() {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('mainSection').style.display = 'block';
-      document.getElementById('currentUser').textContent = session.handle;
-    }
-
-    function logout() {
-      localStorage.removeItem('atprotoSession');
-      location.reload();
-    }
-
-    async function saveText() {
-      if (!session) return;
-
-      const title = document.getElementById('title').value.trim() || "Sin título";
-      const text = document.getElementById('content').value.trim();
-
-      if (!text) return alert("Escribe algo en el contenido");
-
-      const rkey = currentRkey || Date.now().toString(36) + Math.random().toString(36).substr(2);
-
-      try {
-        const resp = await fetch('https://bsky.social/xrpc/com.atproto.repo.putRecord', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.jwt}`
-          },
-          body: JSON.stringify({
-            repo: session.did,
-            collection: "com.antuansv.longtext",
-            rkey: rkey,
-            record: {
-              $type: "com.antuansv.longtext",
-              title: title,
-              text: text,
-              createdAt: new Date().toISOString()
-            }
-          })
-        });
-
-        if (resp.ok) {
-          alert("✅ Guardado correctamente");
-          currentRkey = null;
-          clearForm();
-          listTexts();
-        }
-      } catch (e) {
-        alert("Error al guardar: " + e.message);
-      }
-    }
-
-    async function listTexts() {
-      if (!session) return;
-      const container = document.getElementById('recordsList');
-      container.innerHTML = "<p>Cargando...</p>";
-
-      try {
-        const resp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${session.did}&collection=com.antuansv.longtext&limit=50`, {
-          headers: { 'Authorization': `Bearer ${session.jwt}` }
-        });
-
-        const data = await resp.json();
-        container.innerHTML = '';
-
-        if (data.records.length === 0) {
-          container.innerHTML = "<p>Aún no tienes textos.</p>";
-          return;
-        }
-
-        data.records.forEach(rec => {
-          const rkey = rec.uri.split('/').pop();
-          const div = document.createElement('div');
-          div.className = 'record';
-          div.innerHTML = `
-            <strong>${rec.value.title}</strong><br>
-            <small>${new Date(rec.value.createdAt).toLocaleString()}</small><br><br>
-            <button onclick="showFull('${rkey}', '${rec.value.title.replace(/'/g,"\\'")}', \`${rec.value.text.replace(/`/g,'\\`')}\`)">Leer Completo</button>
-            <button onclick="editText('${rkey}', '${rec.value.title.replace(/'/g,"\\'")}', \`${rec.value.text.replace(/`/g,'\\`')}\`)">Editar</button>
-            <button class="btn-red" onclick="deleteText('${rkey}')">Eliminar</button>
-          `;
-          container.appendChild(div);
-        });
-      } catch (e) {
-        container.innerHTML = "<p>Error al cargar los textos.</p>";
-      }
-    }
-
-    window.showFull = function(rkey, title, text) {
-      const div = document.createElement('div');
-      div.className = 'record';
-      div.innerHTML = `
-        <h3>${title}</h3>
-        <div class="full-text">${text}</div>
-        <button onclick="this.parentElement.remove()">Cerrar</button>
-      `;
-      document.getElementById('recordsList').prepend(div);
-    };
-
-    window.editText = function(rkey, title, text) {
-      currentRkey = rkey;
-      document.getElementById('title').value = title;
-      document.getElementById('content').value = text;
-      window.scrollTo(0,0);
-    };
-
-    window.deleteText = async function(rkey) {
-      if (!confirm("¿Eliminar este texto?")) return;
-
-      try {
-        await fetch('https://bsky.social/xrpc/com.atproto.repo.deleteRecord', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.jwt}`
-          },
-          body: JSON.stringify({
-            repo: session.did,
-            collection: "com.antuansv.longtext",
-            rkey: rkey
-          })
-        });
-        listTexts();
-      } catch (e) {
-        alert("Error al eliminar");
-      }
-    };
-
-    function clearForm() {
-      currentRkey = null;
-      document.getElementById('title').value = '';
-      document.getElementById('content').value = '';
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
