@@ -5,14 +5,14 @@ let currentTasks = [];
 const userStatus = document.getElementById('userStatus');
 const navMenuModal = document.getElementById('navMenuModal');
 
-// ==================== MENÚ ====================
+// Menú
 function openNavMenu() { navMenuModal.style.display = "flex"; }
 function closeNavMenu() { navMenuModal.style.display = "none"; }
 window.onclick = function(event) {
     if (event.target == navMenuModal) closeNavMenu();
 };
 
-// ==================== INICIALIZACIÓN ====================
+// Inicialización
 window.onload = () => {
     const saved = localStorage.getItem('atprotoSession');
     if (saved) {
@@ -21,12 +21,12 @@ window.onload = () => {
         loadActiveProjects();
         loadArchive();
     } else {
-        alert("No hay sesión activa. Redirigiendo a Alba...");
+        alert("No hay sesión activa. Redirigiendo...");
         window.location.href = '../../';
     }
 };
 
-// ==================== LIMPIAR EDITOR ====================
+// Limpiar
 function clearEditor() {
     currentRkey = null;
     currentTasks = [];
@@ -38,14 +38,11 @@ function clearEditor() {
     document.getElementById('currentTasksList').innerHTML = '';
 }
 
-// ==================== TAREAS ====================
+// Tareas
 function addTaskToList() {
     const name = document.getElementById('taskName').value.trim();
     const date = document.getElementById('taskDate').value;
-    if (!name) {
-        alert("Escribe el nombre de la tarea");
-        return;
-    }
+    if (!name) return alert("Escribe el nombre de la tarea");
     currentTasks.push({ nombre: name, fecha: date, completada: false });
     renderCurrentTasks();
     document.getElementById('taskName').value = '';
@@ -86,7 +83,7 @@ function calculateProgress(tasks) {
     return Math.round((done / tasks.length) * 100);
 }
 
-// ==================== GUARDAR ====================
+// Guardar
 async function saveProject() {
     if (!session) return;
     const motivo = document.getElementById('projectTitle').value.trim() || "Sin título";
@@ -121,14 +118,14 @@ async function saveProject() {
                 }
             })
         });
-        alert("Proyecto guardado correctamente");
+        alert("Proyecto guardado");
         clearEditor();
         loadActiveProjects();
         loadArchive();
-    } catch (e) { alert("Error al guardar: " + e.message); }
+    } catch (e) { alert("Error: " + e.message); }
 }
 
-// ==================== FUNCIONES AUXILIARES ====================
+// Días restantes
 function daysRemaining(endDate) {
     if (!endDate) return "—";
     const diff = new Date(endDate) - new Date();
@@ -136,8 +133,7 @@ function daysRemaining(endDate) {
     return days > 0 ? `${days} día${days > 1 ? 's' : ''}` : "Vencido";
 }
 
-// (El resto de funciones: loadActiveProjects, loadArchive, toggleExpand, toggleTaskDone, finishProject, editProject, cloneToEditor, deleteProject, publishProject se mantienen igual que en la versión anterior)
-
+// Cargar Activos
 async function loadActiveProjects() {
     const container = document.getElementById('activeProjects');
     container.innerHTML = "<p>Cargando...</p>";
@@ -215,13 +211,143 @@ window.toggleTaskDone = async function(rkey, taskIndex, isDone) {
             body: JSON.stringify({ repo: session.did, collection: "com.alba.kron", rkey, record })
         });
         loadActiveProjects();
-    } catch (e) { alert("Error al actualizar tarea"); }
+    } catch (e) { alert("Error al actualizar"); }
 };
 
-window.finishProject = async function(rkey) { /* misma función anterior */ };
-window.editProject = async function(rkey) { /* misma */ };
-window.cloneToEditor = async function(rkey) { /* misma */ };
-window.deleteProject = async function(rkey) { /* misma */ };
-window.publishProject = function(rkey, motivo) { /* misma */ };
+// Terminar
+window.finishProject = async function(rkey) {
+    if (!confirm("¿Archivar este proyecto?")) return;
+    try {
+        const getResp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.getRecord?repo=${session.did}&collection=com.alba.kron&rkey=${rkey}`, {
+            headers: { 'Authorization': `Bearer ${session.jwt}` }
+        });
+        const data = await getResp.json();
+        const record = data.value;
 
-async function loadArchive() { /* misma función anterior */ }
+        const terminarTask = record.tareas.find(t => t.nombre === "Terminar proyecto");
+        if (terminarTask) terminarTask.completada = true;
+
+        record.activo = false;
+        record.estado = "terminado";
+        record.porcentaje = calculateProgress(record.tareas);
+        record.updatedAt = new Date().toISOString();
+
+        await fetch('https://bsky.social/xrpc/com.atproto.repo.putRecord', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.jwt}` },
+            body: JSON.stringify({ repo: session.did, collection: "com.alba.kron", rkey, record })
+        });
+        loadActiveProjects();
+        loadArchive();
+    } catch (e) { alert("Error al terminar"); }
+};
+
+// Archivo
+async function loadArchive() {
+    const container = document.getElementById('archiveList');
+    container.innerHTML = "<p>Cargando archivo...</p>";
+    try {
+        const resp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${session.did}&collection=com.alba.kron&limit=50`, {
+            headers: { 'Authorization': `Bearer ${session.jwt}` }
+        });
+        const data = await resp.json();
+        container.innerHTML = '';
+        const archived = data.records.filter(r => r.value.activo === false);
+
+        if (archived.length === 0) {
+            container.innerHTML = "<p>El archivo está vacío.</p>";
+            return;
+        }
+
+        archived.forEach(rec => {
+            const rkey = rec.uri.split('/').pop();
+            const p = rec.value;
+            const status = p.estado === "terminado" ? "✅ Terminado" : "⛔ Vencido";
+            const progress = p.porcentaje || 0;
+
+            const card = document.createElement('div');
+            card.className = 'project-card';
+            card.innerHTML = `
+                <div class="project-header" onclick="toggleExpand(this)">
+                    <div class="project-info">
+                        <strong>${p.motivo}</strong>
+                        <span>${p.categoria || ''}</span>
+                        <span>${p.fechaInicio} → ${p.fechaFin}</span>
+                        <span>${p.tareas ? p.tareas.length : 0} tareas</span>
+                        <span>${progress}%</span>
+                        <span>${status}</span>
+                    </div>
+                    <span class="toggle-btn">+</span>
+                </div>
+                <div class="project-details">
+                    <p><strong>Descripción:</strong> ${p.descripcion || 'Sin descripción'}</p>
+                    <div class="checklist">
+                        ${p.tareas ? p.tareas.map(t => `
+                            <label><input type="checkbox" disabled ${t.completada ? 'checked' : ''}> ${t.nombre}</label>
+                        `).join('') : ''}
+                    </div>
+                    <div class="actions">
+                        <button onclick="cloneToEditor('${rkey}')">Clonar</button>
+                        <button onclick="deleteProject('${rkey}')">Eliminar</button>
+                        <button onclick="publishProject('${rkey}', '${p.motivo}')">Publicar</button>
+                    </div>
+                </div>`;
+            container.appendChild(card);
+        });
+    } catch (e) { container.innerHTML = "<p>Error al cargar archivo.</p>"; }
+};
+
+// Editar y Clonar
+window.editProject = async function(rkey) {
+    try {
+        const getResp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.getRecord?repo=${session.did}&collection=com.alba.kron&rkey=${rkey}`, {
+            headers: { 'Authorization': `Bearer ${session.jwt}` }
+        });
+        const data = await getResp.json();
+        const p = data.value;
+        currentRkey = rkey;
+        loadDataToEditor(p);
+    } catch (e) { alert("Error al editar"); }
+};
+
+window.cloneToEditor = async function(rkey) {
+    try {
+        const getResp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.getRecord?repo=${session.did}&collection=com.alba.kron&rkey=${rkey}`, {
+            headers: { 'Authorization': `Bearer ${session.jwt}` }
+        });
+        const data = await getResp.json();
+        const p = data.value;
+        currentRkey = null;
+        loadDataToEditor(p);
+    } catch (e) { alert("Error al clonar"); }
+};
+
+function loadDataToEditor(p) {
+    document.getElementById('projectTitle').value = p.motivo || '';
+    document.getElementById('description').value = p.descripcion || '';
+    document.getElementById('category').value = p.categoria || '';
+    document.getElementById('startDate').value = p.fechaInicio || '';
+    document.getElementById('endDate').value = p.fechaFin || '';
+    currentTasks = JSON.parse(JSON.stringify(p.tareas || []));
+    renderCurrentTasks();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.deleteProject = async function(rkey) {
+    if (!confirm("¿Eliminar permanentemente?")) return;
+    try {
+        await fetch('https://bsky.social/xrpc/com.atproto.repo.deleteRecord', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.jwt}` },
+            body: JSON.stringify({ repo: session.did, collection: "com.alba.kron", rkey })
+        });
+        loadActiveProjects();
+        loadArchive();
+    } catch (e) { alert("Error al eliminar"); }
+};
+
+window.publishProject = function(rkey, motivo) {
+    const shareUrl = `${window.location.origin}/Kron/?${session.handle}&rkey=${rkey}`;
+    const text = `🕰️ ${motivo}\n\n${shareUrl}`;
+    window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`, '_blank');
+};
