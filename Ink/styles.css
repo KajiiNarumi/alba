@@ -13,6 +13,17 @@ body {
     line-height: 1.75;
 }
 
+/* ==================== ESTILO DE ENLACES ==================== */
+a:link, a:visited {
+    color: #ffffff; /* O puedes usar var(--text) para el gris claro del tema */
+    text-decoration: underline; /* Mantiene la línea; cambia a 'none' si prefieres quitarla */
+}
+
+a:hover, a:active {
+    color: #ffffff; /* Asegura que al pasar el cursor o hacer clic se mantenga blanco */
+    opacity: 0.8;   /* Un sutil cambio visual al pasar el cursor */
+}
+
 /* ==================== NAVBAR ==================== */
 .navbar {
     max-width: 1000px;
@@ -31,6 +42,11 @@ body {
     font-weight: 800;
     cursor: pointer;
     color: #ddd;
+    transition: color 0.2s;
+}
+
+.logo:hover {
+    color: #fff;
 }
 
 .write-btn {
@@ -43,16 +59,9 @@ body {
     white-space: nowrap;
 }
 
-.write-btn:hover {
-    background: #222;
-    border-color: #666;
-}
+.write-btn:hover { background: #222; border-color: #666; }
 
-.search {
-    display: flex;
-    flex: 1;
-    max-width: 420px;
-}
+.search { display: flex; flex: 1; max-width: 420px; }
 
 .search input {
     flex: 1;
@@ -97,11 +106,7 @@ body {
 .profile-info h2 { margin: 0; font-size: 1.65rem; }
 .profile-info p { color: var(--dim); margin: 6px 0; }
 
-.profile-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+.profile-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .btn {
     background: #111;
@@ -135,14 +140,11 @@ body {
     white-space: nowrap;
     cursor: pointer;
     font-size: 0.95rem;
+    text-transform: capitalize;
 }
 
 .album-btn:hover { background: #1a1a1a; }
-.album-btn.active {
-    background: #222;
-    color: #fff;
-    border-color: #666;
-}
+.album-btn.active { background: #222; color: #fff; border-color: #666; }
 
 /* ==================== POSTS ==================== */
 .post {
@@ -151,6 +153,7 @@ body {
     background: #0a0a0a;
     padding: 30px;
     border: 1px solid #1f1f1f;
+    border-radius: 8px;
 }
 
 .post-header {
@@ -169,17 +172,30 @@ body {
 
 .post-title:hover { color: #fff; }
 
-.toggle-btn {
-    font-size: 1.5rem;
-    color: #666;
-    cursor: pointer;
-    padding-right: 8px;
-}
+.toggle-btn { font-size: 1.5rem; color: #666; cursor: pointer; padding-right: 8px; }
 
 .post-date {
     color: var(--dim);
     font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+
+.post-synopsis {
+    color: #aaaaaa;
+    font-style: italic;
+    font-size: 1rem;
     margin-bottom: 15px;
+    padding-left: 12px;
+    border-left: 2px solid #333;
+}
+
+.post-category-label {
+    display: inline-block;
+    color: #666;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .post-content {
@@ -188,55 +204,36 @@ body {
     font-size: 1.05rem;
     line-height: 1.8;
     color: #ddd;
+    margin-top: 20px;
+    border-top: 1px dashed #222;
+    padding-top: 20px;
+}
+
+
+/* ==================== IMÁGENES EN MARKDOWN ==================== */
+.post-content img {
+    display: block;
+    max-width: 80%;
+    height: auto;
+    margin: 24px auto; /* Centrado horizontal y separación arriba/abajo */
+    border-radius: 8px; /* Bordes redondeados */
+    border: 1px solid var(--line); /* Un borde sutil para integrarse al modo oscuro */
 }
 
 /* ==================== MODAL ==================== */
 .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.95);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+    display: none; align-items: center; justify-content: center; z-index: 1000;
 }
-
 .modal-content {
-    background: #111;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-    border: 1px solid #333;
-    border-radius: 8px;
+    background: #111; width: 90%; max-width: 500px; max-height: 80vh;
+    overflow-y: auto; border: 1px solid #333; border-radius: 8px;
 }
-
 .modal-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid #333;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 15px 20px; border-bottom: 1px solid #333; display: flex;
+    justify-content: space-between; align-items: center;
 }
-
-.close {
-    font-size: 28px;
-    cursor: pointer;
-}
-
-.user-item {
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid #1a1a1a;
-    cursor: pointer;
-}
-
+.close { font-size: 28px; cursor: pointer; }
+.user-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1a1a1a; cursor: pointer; }
 .user-item:hover { background: #1a1a1a; }
-
-.user-item img {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-}
+.user-item img { width: 48px; height: 48px; border-radius: 50%; }
