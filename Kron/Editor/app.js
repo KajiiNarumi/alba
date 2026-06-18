@@ -1,32 +1,91 @@
 let session = null;
 let currentRkey = null;
 let currentTasks = [];
+let sessionCheckInterval = null;
 
 const userStatus = document.getElementById('userStatus');
 const navMenuModal = document.getElementById('navMenuModal');
 
-// Menú
+// ==================== MENÚ ====================
 function openNavMenu() { navMenuModal.style.display = "flex"; }
 function closeNavMenu() { navMenuModal.style.display = "none"; }
 window.onclick = function(event) {
     if (event.target == navMenuModal) closeNavMenu();
 };
 
-// Inicialización
+// ==================== VERIFICACIÓN DE SESIÓN ====================
+async function checkSession(silent = false) {
+    if (!session || !session.jwt) {
+        handleSessionExpired();
+        return false;
+    }
+    try {
+        const resp = await fetch(`https://bsky.social/xrpc/com.atproto.server.getSession`, {
+            headers: { 'Authorization': `Bearer ${session.jwt}` }
+        });
+        if (!resp.ok) throw new Error();
+        return true;
+    } catch (e) {
+        if (!silent) handleSessionExpired();
+        return false;
+    }
+}
+
+function handleSessionExpired() {
+    userStatus.innerHTML = `<span style="color:#ff6666;">Sesión expirada</span> 
+        <button onclick="renewSession()" style="margin-left:10px; padding:5px 10px; font-size:0.9rem;">Renovar Sesión</button>`;
+}
+
+window.renewSession = function() {
+    const tempData = {
+        projectTitle: document.getElementById('projectTitle').value,
+        description: document.getElementById('description').value,
+        category: document.getElementById('category').value,
+        startDate: document.getElementById('startDate').value,
+        endDate: document.getElementById('endDate').value,
+        tasks: currentTasks
+    };
+    localStorage.setItem('kronTempForm', JSON.stringify(tempData));
+    
+    localStorage.removeItem('atprotoSession');
+    window.location.href = '../../';
+};
+
+function loadTempFormData() {
+    const saved = localStorage.getItem('kronTempForm');
+    if (saved) {
+        const data = JSON.parse(saved);
+        document.getElementById('projectTitle').value = data.projectTitle || '';
+        document.getElementById('description').value = data.description || '';
+        document.getElementById('category').value = data.category || '';
+        document.getElementById('startDate').value = data.startDate || '';
+        document.getElementById('endDate').value = data.endDate || '';
+        currentTasks = data.tasks || [];
+        renderCurrentTasks();
+        localStorage.removeItem('kronTempForm');
+    }
+}
+
+// ==================== INICIALIZACIÓN ====================
 window.onload = () => {
     const saved = localStorage.getItem('atprotoSession');
     if (saved) {
         session = JSON.parse(saved);
         userStatus.textContent = `Conectado como: ${session.handle}`;
+        loadTempFormData();
         loadActiveProjects();
         loadArchive();
+
+        // Verificación automática cada 5 minutos
+        if (sessionCheckInterval) clearInterval(sessionCheckInterval);
+        sessionCheckInterval = setInterval(() => checkSession(true), 300000);
     } else {
         alert("No hay sesión activa. Redirigiendo...");
         window.location.href = '../../';
     }
 };
 
-// Limpiar
+// ==================== LIMPIAR ====================
 function clearEditor() {
     currentRkey = null;
     currentTasks = [];
@@ -38,7 +97,7 @@ function clearEditor() {
     document.getElementById('currentTasksList').innerHTML = '';
 }
 
-// Tareas
+// ==================== TAREAS ====================
 function addTaskToList() {
     const name = document.getElementById('taskName').value.trim();
     const date = document.getElementById('taskDate').value;
@@ -83,9 +142,9 @@ function calculateProgress(tasks) {
     return Math.round((done / tasks.length) * 100);
 }
 
-// Guardar
+// ==================== GUARDAR ====================
 async function saveProject() {
-    if (!session) return;
+    if (!(await checkSession())) return;
     const motivo = document.getElementById('projectTitle').value.trim() || "Sin título";
     const descripcion = document.getElementById('description').value.trim();
     const categoria = document.getElementById('category').value.trim();
@@ -118,14 +177,14 @@ async function saveProject() {
                 }
             })
         });
-        alert("Proyecto guardado");
+        alert("Proyecto guardado correctamente");
         clearEditor();
         loadActiveProjects();
         loadArchive();
-    } catch (e) { alert("Error: " + e.message); }
+    } catch (e) { alert("Error al guardar: " + e.message); }
 }
 
-// Días restantes
+// ==================== DÍAS RESTANTES ====================
 function daysRemaining(endDate) {
     if (!endDate) return "—";
     const diff = new Date(endDate) - new Date();
@@ -133,7 +192,7 @@ function daysRemaining(endDate) {
     return days > 0 ? `${days} día${days > 1 ? 's' : ''}` : "Vencido";
 }
 
-// Cargar Activos
+// ==================== CARGAR ACTIVOS ====================
 async function loadActiveProjects() {
     const container = document.getElementById('activeProjects');
     container.innerHTML = "<p>Cargando...</p>";
@@ -153,6 +212,8 @@ async function loadActiveProjects() {
         active.forEach(rec => {
             const rkey = rec.uri.split('/').pop();
             const p = rec.value;
+            const total = p.tareas ? p.tareas.length : 0;
+            const pending = total - (p.tareas ? p.tareas.filter(t => t.completada).length : 0);
             const progress = p.porcentaje || calculateProgress(p.tareas);
 
             const card = document.createElement('div');
@@ -162,7 +223,7 @@ async function loadActiveProjects() {
                     <div class="project-info">
                         <strong>${p.motivo}</strong>
                         <span>${p.categoria || ''}</span>
-                        <span>${progress}%</span>
+                        <span>${progress}% • ${pending} pendientes</span>
                         <span>Vence en ${daysRemaining(p.fechaFin)}</span>
                     </div>
                     <span class="toggle-btn">+</span>
@@ -195,6 +256,7 @@ window.toggleExpand = function(header) {
 };
 
 window.toggleTaskDone = async function(rkey, taskIndex, isDone) {
+    if (!(await checkSession())) return;
     try {
         const getResp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.getRecord?repo=${session.did}&collection=com.alba.kron&rkey=${rkey}`, {
             headers: { 'Authorization': `Bearer ${session.jwt}` }
@@ -211,11 +273,12 @@ window.toggleTaskDone = async function(rkey, taskIndex, isDone) {
             body: JSON.stringify({ repo: session.did, collection: "com.alba.kron", rkey, record })
         });
         loadActiveProjects();
-    } catch (e) { alert("Error al actualizar"); }
+    } catch (e) { alert("Error al actualizar tarea"); }
 };
 
-// Terminar
+// ==================== TERMINAR ====================
 window.finishProject = async function(rkey) {
+    if (!(await checkSession())) return;
     if (!confirm("¿Archivar este proyecto?")) return;
     try {
         const getResp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.getRecord?repo=${session.did}&collection=com.alba.kron&rkey=${rkey}`, {
@@ -242,7 +305,7 @@ window.finishProject = async function(rkey) {
     } catch (e) { alert("Error al terminar"); }
 };
 
-// Archivo
+// ==================== ARCHIVO ====================
 async function loadArchive() {
     const container = document.getElementById('archiveList');
     container.innerHTML = "<p>Cargando archivo...</p>";
@@ -273,7 +336,6 @@ async function loadArchive() {
                         <strong>${p.motivo}</strong>
                         <span>${p.categoria || ''}</span>
                         <span>${p.fechaInicio} → ${p.fechaFin}</span>
-                        <span>${p.tareas ? p.tareas.length : 0} tareas</span>
                         <span>${progress}%</span>
                         <span>${status}</span>
                     </div>
@@ -281,11 +343,6 @@ async function loadArchive() {
                 </div>
                 <div class="project-details">
                     <p><strong>Descripción:</strong> ${p.descripcion || 'Sin descripción'}</p>
-                    <div class="checklist">
-                        ${p.tareas ? p.tareas.map(t => `
-                            <label><input type="checkbox" disabled ${t.completada ? 'checked' : ''}> ${t.nombre}</label>
-                        `).join('') : ''}
-                    </div>
                     <div class="actions">
                         <button onclick="cloneToEditor('${rkey}')">Clonar</button>
                         <button onclick="deleteProject('${rkey}')">Eliminar</button>
@@ -297,8 +354,9 @@ async function loadArchive() {
     } catch (e) { container.innerHTML = "<p>Error al cargar archivo.</p>"; }
 };
 
-// Editar y Clonar
+// ==================== EDITAR Y CLONAR ====================
 window.editProject = async function(rkey) {
+    if (!(await checkSession())) return;
     try {
         const getResp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.getRecord?repo=${session.did}&collection=com.alba.kron&rkey=${rkey}`, {
             headers: { 'Authorization': `Bearer ${session.jwt}` }
@@ -311,6 +369,7 @@ window.editProject = async function(rkey) {
 };
 
 window.cloneToEditor = async function(rkey) {
+    if (!(await checkSession())) return;
     try {
         const getResp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.getRecord?repo=${session.did}&collection=com.alba.kron&rkey=${rkey}`, {
             headers: { 'Authorization': `Bearer ${session.jwt}` }
@@ -334,6 +393,7 @@ function loadDataToEditor(p) {
 }
 
 window.deleteProject = async function(rkey) {
+    if (!(await checkSession())) return;
     if (!confirm("¿Eliminar permanentemente?")) return;
     try {
         await fetch('https://bsky.social/xrpc/com.atproto.repo.deleteRecord', {
