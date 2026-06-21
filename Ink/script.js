@@ -164,7 +164,7 @@ async function loadUser(rawInput, historyMode = 'push') {
 
         let recordsData = { records: [] };
         try {
-            const recordsRes = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${did}&collection=com.antuansv.longtext&limit=100`);
+            const recordsRes = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${did}&collection=com.alba.ink&limit=100`);
             if (recordsRes.ok) recordsData = await recordsRes.json();
         } catch (e) {
             console.log("Error o repositorio vacío.");
