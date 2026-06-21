@@ -78,10 +78,10 @@ async function saveText() {
             },
             body: JSON.stringify({
                 repo: session.did,
-                collection: "com.antuansv.longtext",
+                collection: "com.alba.ink",
                 rkey: rkey,
                 record: {
-                    $type: "com.antuansv.longtext",
+                    $type: "com.alba.ink",
                     title: title,
                     category: category,
                     synopsis: synopsis,
@@ -110,7 +110,7 @@ async function listTexts() {
     recordsList.innerHTML = "<p>Cargando archivo...</p>";
 
     try {
-        const resp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${session.did}&collection=com.antuansv.longtext&limit=50`, {
+        const resp = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${session.did}&collection=com.alba.ink&limit=50`, {
             headers: { 'Authorization': `Bearer ${session.jwt}` }
         });
 
@@ -179,7 +179,7 @@ window.deleteText = async function(rkey) {
             },
             body: JSON.stringify({
                 repo: session.did,
-                collection: "com.antuansv.longtext",
+                collection: "com.alba.ink",
                 rkey: rkey
             })
         });
