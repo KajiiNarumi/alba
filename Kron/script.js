@@ -361,23 +361,21 @@ function renderCarousel(rkey, tareas) {
 
     const currentIndex = window.carouselStates[rkey];
     const total = tareas.length;
+    
+    // Deshabilitar flechas si estamos en los extremos
     const btnPrevState = currentIndex === 0 ? "disabled" : "";
     const btnNextState = currentIndex === total - 1 ? "disabled" : "";
 
-    let prevText = "";
-    if (currentIndex > 0) prevText = `· ${tareas[currentIndex - 1].nombre}`;
-    let currentText = `· ${tareas[currentIndex].nombre} ${currentIndex + 1}/${total}`;
-    let nextText = "";
-    if (currentIndex < total - 1) nextText = `· ${tareas[currentIndex + 1].nombre}`;
+    // Construimos solo el texto de la tarea actual
+    let currentText = `· ${tareas[currentIndex].nombre} (${currentIndex + 1}/${total})`;
 
     const safeTareasStr = encodeURIComponent(JSON.stringify(tareas));
 
+    // Inyectamos el HTML con solo 1 div central
     container.innerHTML = `
     <button class="carousel-btn" ${btnPrevState} onclick="moveCarousel('${rkey}', -1, '${safeTareasStr}')">❮</button>
     <div class="carousel-content">
-    <div class="task-item" style="text-align: left;">${prevText}</div>
-    <div class="task-item current">${currentText}</div>
-    <div class="task-item" style="text-align: right;">${nextText}</div>
+        <div class="task-item current">${currentText}</div>
     </div>
     <button class="carousel-btn" ${btnNextState} onclick="moveCarousel('${rkey}', 1, '${safeTareasStr}')">❯</button>
     `;
