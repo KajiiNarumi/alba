@@ -361,7 +361,7 @@ function renderCarousel(rkey, tareas) {
 
     const currentIndex = window.carouselStates[rkey];
     const total = tareas.length;
-    
+
     // Deshabilitar flechas si estamos en los extremos
     const btnPrevState = currentIndex === 0 ? "disabled" : "";
     const btnNextState = currentIndex === total - 1 ? "disabled" : "";
@@ -375,7 +375,7 @@ function renderCarousel(rkey, tareas) {
     container.innerHTML = `
     <button class="carousel-btn" ${btnPrevState} onclick="moveCarousel('${rkey}', -1, '${safeTareasStr}')">❮</button>
     <div class="carousel-content">
-        <div class="task-item current">${currentText}</div>
+    <div class="task-item current">${currentText}</div>
     </div>
     <button class="carousel-btn" ${btnNextState} onclick="moveCarousel('${rkey}', 1, '${safeTareasStr}')">❯</button>
     `;
