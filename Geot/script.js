@@ -1,6 +1,6 @@
 let session = null;
 let currentTargetDid = null;
-const joto_COLLECTION = 'com.alba.joto';
+const geot_COLLECTION = 'com.alba.geot';
 
 // Elementos DOM
 const friendsContainer = document.getElementById('friendsContainer');
@@ -89,7 +89,7 @@ async function loadFriends() {
 async function checkIncomingMessages(friends) {
     for (const f of friends) {
         try {
-            const res = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${f.did}&collection=${joto_COLLECTION}`);
+            const res = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${f.did}&collection=${geot_COLLECTION}`);
             if (res.ok) {
                 const data = await res.json();
                 const hasMessageForMe = (data.records || []).some(r => r.value.recipient === session.did);
@@ -136,13 +136,13 @@ async function refreshMessages() {
 
     let sent = [], received = [];
     try {
-        const myRes = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${session.did}&collection=${joto_COLLECTION}`);
+        const myRes = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${session.did}&collection=${geot_COLLECTION}`);
         const myData = await myRes.json();
         sent = (myData.records || []).filter(r => r.value.recipient === currentTargetDid).map(r => ({ ...r.value, type: 'self' }));
     } catch(e) {}
 
     try {
-        const theirRes = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${currentTargetDid}&collection=${joto_COLLECTION}`);
+        const theirRes = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${currentTargetDid}&collection=${geot_COLLECTION}`);
         const theirData = await theirRes.json();
         received = (theirData.records || []).filter(r => r.value.recipient === session.did).map(r => ({ ...r.value, type: 'other' }));
     } catch(e) {}
@@ -154,7 +154,7 @@ async function refreshMessages() {
     // Burbuja de advertencia
     const warningDiv = document.createElement('div');
     warningDiv.className = 'msg-bubble msg-warning';
-    warningDiv.innerHTML = '<b>Aviso de Privacidad</b><br>joto no utiliza cifrado y opera sobre un PDS público. Evita enviar información sensible o personal.';
+    warningDiv.innerHTML = '<b>Aviso de Privacidad</b><br>geot no utiliza cifrado y opera sobre un PDS público. Evita enviar información sensible o personal.';
     messagesContainer.appendChild(warningDiv);
 
     // Renderizar mensajes con hora
@@ -198,9 +198,9 @@ document.getElementById('sendBtn').onclick = async () => {
             headers: { 'Authorization': `Bearer ${session.jwt}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 repo: session.did,
-                collection: joto_COLLECTION,
+                collection: geot_COLLECTION,
                 record: {
-                    $type: joto_COLLECTION,
+                    $type: geot_COLLECTION,
                     recipient: currentTargetDid,
                     text: text,
                     createdAt: new Date().toISOString()
@@ -216,7 +216,7 @@ document.getElementById('sendBtn').onclick = async () => {
 // Borrar Chat Propio
 async function confirmDeleteChat() {
     try {
-        const res = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${session.did}&collection=${joto_COLLECTION}`);
+        const res = await fetch(`https://bsky.social/xrpc/com.atproto.repo.listRecords?repo=${session.did}&collection=${geot_COLLECTION}`);
         const data = await res.json();
         const myMessages = data.records.filter(r => r.value.recipient === currentTargetDid);
 
@@ -224,7 +224,7 @@ async function confirmDeleteChat() {
             await fetch(`https://bsky.social/xrpc/com.atproto.repo.deleteRecord`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${session.jwt}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ repo: session.did, collection: joto_COLLECTION, rkey: msg.uri.split('/').pop() })
+                body: JSON.stringify({ repo: session.did, collection: geot_COLLECTION, rkey: msg.uri.split('/').pop() })
             });
         }
         closeDeleteModal();
