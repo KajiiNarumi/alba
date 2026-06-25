@@ -1,0 +1,137 @@
+:root {
+    --bg: #000000;
+    --text: #e0e0e0;
+    --dim: #888888;
+    --line: #222222;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.75; height: 100vh; display: flex; flex-direction: column;
+}
+
+a:link, a:visited { color: #ffffff; text-decoration: underline; }
+a:hover, a:active { color: #ffffff; opacity: 0.8; }
+
+/* ==================== NAVBAR ==================== */
+.navbar {
+    max-width: 1000px; width: 100%; margin: 0 auto; display: flex;
+    align-items: center; justify-content: space-between;
+    padding: 15px 20px; border-bottom: 1px solid var(--line);
+}
+
+.logo { font-size: 1.85rem; font-weight: 800; color: #ddd; user-select: none; }
+.brand-alba, .brand-Geot { cursor: pointer; transition: color 0.2s; }
+.brand-alba:hover, .brand-Geot:hover { color: #fff; }
+
+.btn {
+    background: #111; border: 1px solid #444; color: #ccc;
+    padding: 7px 14px; border-radius: 9999px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
+}
+.btn:hover { background: #222; color: #fff; border-color: #666; }
+
+/* ==================== CARRUSEL DE AMIGOS ==================== */
+.container { max-width: 900px; width: 100%; margin: 0 auto; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.carousel-wrapper {
+    display: flex; align-items: center; border-bottom: 1px solid var(--line);
+    padding: 10px; background: var(--bg); flex-shrink: 0;
+}
+
+.carousel-arrow {
+    background: transparent; border: none; color: var(--dim); cursor: pointer;
+    font-size: 1.5rem; padding: 0 10px; transition: color 0.2s;
+}
+.carousel-arrow:hover { color: #fff; }
+
+.albums {
+    display: flex; gap: 15px; overflow-x: auto; padding: 5px 10px;
+    scrollbar-width: none; flex: 1; scroll-behavior: smooth;
+}
+.albums::-webkit-scrollbar { display: none; }
+
+.friend-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    cursor: pointer; min-width: 65px; opacity: 0.6; transition: opacity 0.2s;
+    position: relative;
+}
+.friend-btn:hover, .friend-btn.active { opacity: 1; }
+.friend-btn img {
+    width: 55px; height: 55px; border-radius: 50%; border: 2px solid transparent;
+    object-fit: cover; background: #111;
+}
+.friend-btn.active img { border-color: #fff; }
+.friend-btn span {
+    font-size: 0.75rem; color: var(--text); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; max-width: 65px; text-align: center;
+}
+
+/* Indicador de Mensaje Nuevo */
+.msg-indicator {
+    position: absolute; top: 0; right: 2px; width: 14px; height: 14px;
+    background: #ff3333; border-radius: 50%; border: 2px solid var(--bg);
+    display: none; box-shadow: 0 0 5px rgba(255,51,51,0.5);
+}
+
+/* ==================== ÁREA DE CHAT ==================== */
+.chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.chat-header {
+    padding: 15px 20px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 15px; background: var(--bg);
+}
+#chatAvatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; display: none; }
+.chat-header-info { display: flex; flex-direction: column; }
+.chat-header-info h3 { margin: 0; font-size: 1.15rem; color: #fff; font-weight: 600; line-height: 1.2; }
+#chatUserHandle { color: var(--dim); font-size: 0.85rem; }
+
+.messages-container {
+    flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: thin;
+}
+
+/* Burbujas */
+.msg-bubble {
+    max-width: 75%; padding: 10px 14px 6px 14px; border-radius: 12px;
+    font-size: 0.95rem; line-height: 1.4; word-wrap: break-word;
+    display: flex; flex-direction: column;
+}
+.msg-self { background: #1a1a1a; align-self: flex-end; border: 1px solid #333; color: #fff; border-bottom-right-radius: 2px; }
+.msg-other { background: #0a0a0a; border: 1px solid #222; align-self: flex-start; color: #ddd; border-bottom-left-radius: 2px; }
+
+/* Hora del mensaje */
+.msg-time {
+    font-size: 0.65rem; align-self: flex-end; margin-top: 4px;
+    color: var(--dim);
+}
+
+/* Burbuja de Advertencia Elegante */
+.msg-warning {
+    background: transparent; border: 1px solid #333; color: var(--dim);
+    align-self: center; text-align: center; font-size: 0.8rem; max-width: 85%;
+    padding: 12px 20px; border-radius: 8px; margin-bottom: 10px;
+}
+
+/* ==================== INPUT ==================== */
+.chat-input-area { padding: 15px 20px; border-top: 1px solid var(--line); background: var(--bg); display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+#messageInput {
+width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff;
+padding: 12px; border-radius: 8px; resize: none; outline: none; font-family: inherit;
+}
+#messageInput:focus { border-color: #444; }
+.chat-controls { display: flex; justify-content: space-between; align-items: center; }
+.char-count { color: var(--dim); font-size: 0.8rem; }
+
+/* ==================== MODALES ==================== */
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; z-index: 1000; }
+.modal-content { background: #0a0a0a; width: 90%; max-width: 400px; border: 1px solid #333; border-radius: 8px; }
+.modal-header { padding: 15px 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { margin: 0; font-size: 1.1rem; }
+.close { font-size: 24px; cursor: pointer; color: var(--dim); transition: color 0.2s; }
+.close:hover { color: #fff; }
+
+.nav-menu-links { display: flex; flex-direction: column; padding: 10px 0; }
+.nav-menu-links a { padding: 15px 25px; color: #fff; text-decoration: none; font-size: 1.2rem; font-weight: 500; border-bottom: 1px solid #111; transition: background 0.2s; }
+.nav-menu-links a:last-child { border-bottom: none; }
+.nav-menu-links a:hover { background: #111; }
